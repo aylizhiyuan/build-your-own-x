@@ -164,18 +164,17 @@ output:
 
 7. 自动变量
 
-$@ 指当前目标,例如make foo的$@就是foo
-
 ```shell
+#  $@ 指当前目标,例如make foo的$@就是foo
 a.txt b.txt:
     # 等同于分别touch a.txt / touch b.txt
     touch $@
 
 ```
 
-\$< 指代第一个前提条件，例如规则t:p1 p2,那么$<指代p1
 
 ```shell
+# \$< 指代第一个前提条件，例如规则t:p1 p2,那么$<指代p1
 a.txt: b.txt c.txt
     cp $< $@
 
