@@ -101,7 +101,7 @@ make file3
 
 1. 注释
 
-# 代表注释
+\# 代表注释
 
 ```shell
 # 这就是注释
@@ -271,3 +271,15 @@ min: $(OUTPUT:.js=.min.js)
 
 ```
 上面代码的意思是，将变量OUTPUT中的后缀名 .js 全部替换成 .min.js 。
+
+
+## cmake
+1. 构建过程
+简单整理下cmake的构建过程:
+
+- cmake .. 使用外部构建的方式，在build中执行
+- 然后build文件中直接执行make命令
+
+
+
+
