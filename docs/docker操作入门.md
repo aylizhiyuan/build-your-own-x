@@ -121,8 +121,15 @@ docker push username/ubuntu:18.04
 运行容器时执行的shell命令
 ```
 
+6、docker容器连接
 
-6、dockercomponse
+
+
+
+
+
+
+7、dockercomponse
 
 Compose 使用的三个步骤：
 ```
