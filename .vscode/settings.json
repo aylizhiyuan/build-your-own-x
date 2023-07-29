@@ -1,0 +1,5 @@
+{
+    "files.associations": {
+        "quickjs-libc.h": "c"
+    }
+}

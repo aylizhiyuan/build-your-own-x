@@ -84,23 +84,24 @@ int main(int argc, char **argv) {
     check->data = engine;
 
     {
+        // 在执行之前注册名为fib.so的原生模块
         extern JSModuleDef *js_init_module_fib(JSContext *ctx, const char *name);
         js_init_module_fib(ctx, "fib.so");
-
         extern JSModuleDef *js_init_module_uv(JSContext *ctx, const char *name);
         js_init_module_uv(ctx, "uv.so");
     }
 
     uint8_t *buf;
     size_t buf_len;
+    // 包含同步和异步的代码
     const char *filename = "../src/test.js";
     buf = js_load_file(ctx, &buf_len, filename);
 
     uv_check_start(check, check_callback);
     uv_unref((uv_handle_t *) check);
-
+    // 这段代码用于来执行js的同步代码
     eval_buf(ctx, buf, buf_len, filename, JS_EVAL_TYPE_MODULE);
-
+    // 启动eventLoop来执行js的异步代码
     uv_run(loop, UV_RUN_DEFAULT);
     JS_FreeContext(ctx);
     JS_FreeRuntime(rt);
