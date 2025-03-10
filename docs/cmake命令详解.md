@@ -152,5 +152,166 @@ $ tree -L 1
 └── sub.c
 ```
 
+**放在build文件夹中执行**
+
+```SHELL
+# 首先进入build文件夹再执行cmake
+$ mkdir build
+$ cd build
+$ cmake ..
+```
+
+```SHELL
+$ tree build -L 1
+build
+├── CMakeCache.txt
+├── CMakeFiles
+├── cmake_install.cmake
+└── Makefile
+
+1 directory, 3 files
+
+```
+
+
+
+### 3. 私人定制
+
+***变量***
+
+```CMAKE
+# SET的指令的语法是:
+# []中的参数为可选项,如不需要则可以不写
+SET (VAR [VALUE] [CACHE TYPE DOCSTRING [FORCE]])
+```
+
+
+```CMAKE
+# 方式1: 各个源文件之间使用空格间隔
+# set(SRC_LIST add.c div.c main.c mult.c sub.c)
+
+# 方式2: 各个源文件之间使用分号;间隔
+set(SRC_LIST add.c;div.c;main.c;mult.c;sub.c)
+add_executable(app ${SRC_LIST})
+```
+
+***指定使用的C++标准***
+
+```CMAKE
+# 增加-std=c++11
+set(CMAKE_CXX_STANDARD 11)
+# 增加-std=C++14
+set(CMAKE_CXX_STANDARD 14)
+# 增加-std=C++17
+set(CMAKE_CXX_STANDARD 17)
+```
+在执行cmake命令的时候指定这个宏的值
+
+```SHELL
+cmake 文件路径 -DCMAKE_CXX_STANDARD=11
+
+cmake 文件路径 -DCMAKE_CXX_STANDARD=14
+
+cmake 文件路径 -DCMAKE_CXX_STANDARD=17
+```
+
+***指定输出的路径***
+
+```CMAKE
+set(HOME /home/robin/Linux/Sort)
+set(EXECUTABLE_OUTPUT_PATH ${HOME}/bin)
+```
+
+### 4. 搜索文件
+
+使用`aux_source_directory`可以查找某个路径下的所有源文件
+
+```CMAKE
+# dir: 要搜索的目录
+# variable: 将从dir目录搜索到的源文件列表存储到该变量中
+axu_source_directory(< dir > < variable >)
+```
+
+```CMAKE
+cmake_minimum_required(VERSION 3.0)
+project(CALC)
+include_directory(${PROJECT_SOURCE_DIR}/include)
+# 搜索src目录下的源文件
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src SRC_LIST)
+add_executeable(app ${SRC_LIST})
+```
+
+***根据规则查找文件***
+
+```CMAKE
+# GLOB: 将指定目录下搜索到的满足
+file(GLOB/GLOB_RECURSE 变量名 要搜索的文件路径和文件类型)
+file(GLOB MAIN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(GLOB MAIN_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+```
+
+### 5. 包含头文件
+
+通常系统内部包含的头文件是不需要做什么处理的,gcc会自动为你包含,但是如果是自己创建的头文件,可能会放在`include`文件夹中,默认是需要指明头文件的位置的
+
+```CMAKE
+include_directories(headpath)
+```
+
+```SHELL
+$ tree
+.
+├── build
+├── CMakeLists.txt
+├── include
+│   └── head.h
+└── src
+    ├── add.cpp
+    ├── div.cpp
+    ├── main.cpp
+    ├── mult.cpp
+    └── sub.cpp
+
+3 directories, 7 files
+```
+
+cMakeLists.txt的文件内容如下:
+
+```CMAKE
+cmake_minimum_required(VERSION 3.0)
+project(CALC)
+set(CMAKE_CXX_STANDARD 11)
+set(HOME /home/robin/Linux/calc)
+set(EXECUTABLE_OUTPUT_PATH ${HOME}/bin/)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+file(GLOB SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+add_executable(app  ${SRC_LIST})
+```
+
+### 6. 制作静态库或者动态库
+
+有些时候我们编写的源代码并不需要将他们编译生成为可执行程序,而是生成静态库或者动态库给第三方使用
+
+静态库可以让不同的项目直接复用相同的代码,仅仅是为了`复用`,我们自己的类库通常就是做成静态库
+
+***制作静态库***
+
+***制作动态库***
+
+***指定输出的路径***
+
+### 7. 包含库文件
+
+***链接静态库***
+
+***链接动态库***
+
+### 8. 日志
+
+### 9. 变量操作
+
+### 10. 宏定义
+
+
 
 
