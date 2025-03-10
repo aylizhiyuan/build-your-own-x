@@ -296,21 +296,240 @@ add_executable(app  ${SRC_LIST})
 
 ***制作静态库***
 
+```CMAKE
+add_library(库名称 STATIC 源文件1 [源文件2]...)
+```
+
+Liunx中,静态库分为三部分: lib + 库名称 + .a,制作的时候只需要指明名称即可,另外两部分在生成该文件的时候会自动的填充
+
+```SHELL
+.
+├── build
+├── CMakeLists.txt
+├── include           # 头文件目录
+│   └── head.h
+├── main.cpp          # 用于测试的源文件
+└── src               # 源文件目录
+    ├── add.cpp
+    ├── div.cpp
+    ├── mult.cpp
+    └── sub.cpp
+```
+
+下面我们就把这个项目生成为一个静态库
+
+```CMAKE
+cmake_minimum_required(VERSION 3.0)
+project(CALC)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+file(GLOB SRC_LIST "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+add_library(calc STATIC ${SRC_LIST})
+
+```
+
+
+
+
 ***制作动态库***
 
+```CMAKE
+add_library(库名称 SHARED 源文件1 [源文件2] ...) 
+```
+在Linux中,动态库名字分为三部分:lib + 库名字 + .so，此处只需要指定出库的名字就可以了,另外两部分在生成该文件的时候会自动填充
+
+```CMAKE
+cmake_minimum_required(VERSION 3.0)
+project(CALC)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+file(GLOB SRC_LIST "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+add_library(calc SHARED ${SRC_LIST})
+
+```
+
 ***指定输出的路径***
+
+```CMAKE
+cmake_minimum_required(VERSION 3.0)
+project(CALC)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+file(GLOB SRC_LIST "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+# 设置动态库/静态库生成路径
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+# 生成动态库
+#add_library(calc SHARED ${SRC_LIST})
+# 生成静态库
+add_library(calc STATIC ${SRC_LIST})
+
+```
 
 ### 7. 包含库文件
 
 ***链接静态库***
 
+```CMAKE
+link_libraries(<static lib> [<static lib>...])
+```
+
+- 参数1: 指定要链接的静态库的名称
+    - 可以是全名 libxxx.a
+    - 也可以是xxx
+
+也可以指明静态库的地址
+
+```CMAKE
+link_directories(<lib path>)
+```
+
+```CMAKE
+cmake_minimum_required(VERSION 3.0)
+project(CALC)
+# 搜索指定目录下源文件
+file(GLOB SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+# 包含头文件路径
+include_directories(${PROJECT_SOURCE_DIR}/include)
+# 包含静态库路径
+link_directories(${PROJECT_SOURCE_DIR}/lib)
+# 链接静态库
+link_libraries(calc)
+add_executable(app ${SRC_LIST})
+```
+
 ***链接动态库***
+
+```CMAKE
+
+target_link_libraries(
+    <target> 
+    <PRIVATE|PUBLIC|INTERFACE> <item>... 
+    [<PRIVATE|PUBLIC|INTERFACE> <item>...]...)
+
+```
+
+- target指定要加载的库的文件的名称
+- PRIVATE|PUBLIC|INTERFACE 动态库的访问权限,默认是public
+
+链接系统动态库
+
+```CMAKE
+cmake_minimum_required(VERSION 3.0)
+project(TEST)
+file(GLOB SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+# 添加并指定最终生成的可执行程序名
+add_executable(app ${SRC_LIST})
+# 指定可执行程序要链接的动态库名字
+target_link_libraries(app pthread)
+
+```
+
+链接自定义动态库
+
+```SHELL
+$ tree 
+.
+├── build
+├── CMakeLists.txt
+├── include
+│   └── head.h            # 动态库对应的头文件
+├── lib
+│   └── libcalc.so        # 自己制作的动态库文件
+└── main.cpp              # 测试用的源文件
+
+3 directories, 4 files
+
+```
+
+```CMAKE
+
+cmake_minimum_required(VERSION 3.0)
+project(TEST)
+file(GLOB SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+# 指定源文件或者动态库对应的头文件路径
+include_directories(${PROJECT_SOURCE_DIR}/include)
+# 指定要链接的动态库的路径
+link_directories(${PROJECT_SOURCE_DIR}/lib)
+# 添加并生成一个可执行程序
+add_executable(app ${SRC_LIST})
+# 指定要链接的动态库
+target_link_libraries(app pthread calc)
+```
 
 ### 8. 日志
 
+```CMAKE
+message([STATUS|WARNING|AUTHOR_WARNING|FATAL_ERROR|SEND_ERROR] "message to display" ...)
+```
+
+- 无 :重要消息
+- STATUS: 非重要消息
+- WARNING: CMake警告,会继续执行
+- AUTHOR_WANRING: CMake警告(dev),会继续执行
+- SEND_ERROR: CMake错误,继续执行
+- FATAL_ERROR: CMake错误,终止所有处理过程
+
+```CMAKE
+# 输出一般日志信息
+message(STATUS "source path: ${PROJECT_SOURCE_DIR}")
+# 输出警告信息
+message(WARNING "source path: ${PROJECT_SOURCE_DIR}")
+# 输出错误信息
+message(FATAL_ERROR "source path: ${PROJECT_SOURCE_DIR}")
+```
+
 ### 9. 变量操作
 
+***使用set拼接***
+
+```CMAKE
+set(变量名1 ${变量名1} ${变量名2} ...)
+```
+
+```CMAKE
+cmake_minimum_required(VERSION 3.0)
+project(TEST)
+set(TEMP "hello,world")
+file(GLOB SRC_1 ${PROJECT_SOURCE_DIR}/src1/*.cpp)
+file(GLOB SRC_2 ${PROJECT_SOURCE_DIR}/src2/*.cpp)
+# 追加(拼接)
+set(SRC_1 ${SRC_1} ${SRC_2} ${TEMP})
+message(STATUS "message: ${SRC_1}")
+```
+
+***使用list**
+
+```CMAKE
+# append代表着对数据进行追加
+list(APPEND <list> [<element> ...])
+```
+
+```CMAKE
+cmake_minimum_required(VERSION 3.0)
+project(TEST)
+set(TEMP "hello,world")
+file(GLOB SRC_1 ${PROJECT_SOURCE_DIR}/src1/*.cpp)
+file(GLOB SRC_2 ${PROJECT_SOURCE_DIR}/src2/*.cpp)
+# 追加(拼接)
+list(APPEND SRC_1 ${SRC_1} ${SRC_2} ${TEMP})
+message(STATUS "message: ${SRC_1}")
+
+```
+
+
 ### 10. 宏定义
+
+我们先观察我们自己预定义的宏即可
+
+|宏|功能
+|----|-------|
+|PROJECT_SOURCE_DIR|使用cmake命令后紧跟的目录，一般是工程的根目录|
+|PROJECT_BINARY_DIR|执行cmake命令的目录|
+|CMAKE_CURRENT_SOURCE_DIR|当前处理的CMakeLists.txt所在的路径|
+|CMAKE_CURRENT_BINARY_DIR|target 编译目录
+|EXECUTABLE_OUTPUT_PATH|重新定义目标二进制可执行文件的存放位置
+|LIBRARY_OUTPUT_PATH|重新定义目标链接库文件的存放位置
+|PROJECT_NAME|返回通过PROJECT指令定义的项目名称
+|CMAKE_BINARY_DIR|项目实际构建路径，假设在build目录进行的构建，那么得到的就是这个目录的路径
+
+
 
 
 
